@@ -45,13 +45,13 @@ body {
 			this.load.tilemap('level', 'assets/super_mario_map.json', null,
 					Phaser.Tilemap.TILED_JSON);
 			//Sound for coins
-			game.load.audio('CoinS', 'assets/CoinSd.mp3');
+			game.load.audio('sound', 'assets/CoinSd.mp3');
 		}
 
 		function create() {
 			
 			//Coin Sound
-			CSD = game.add.audio('CoinS');
+			SOUND = game.add.audio('sound');
 			
 			Phaser.Canvas.setImageRenderingCrisp(game.canvas)
 			game.scale.pageAlignHorizontally = true;
@@ -139,7 +139,7 @@ body {
 		}
 
 		function coinOverlap(player, coin) {
-			CSD.play():
+			SOUND.play();
 			coin.kill();
 		}
 
