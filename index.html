@@ -1,0 +1,316 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Super-Mario</title>
+<meta charset="utf-8">
+<style>
+body {
+    
+	
+	margin: 0;
+	padding: 0;
+	background-color: #000;
+}
+    h2 {color: #00FF00;}
+	h3 {color: #00FF00;}
+
+</style>
+<script src="//cdn.jsdelivr.net/phaser/2.6.2/phaser.min.js"></script>
+</head>
+<body>
+	
+	<h2 id="scoreText" align="center" ></h2>
+    <h3 id="LivesText" align="center" ></h3> 
+	
+	<!-- audio player
+		<audio  autoplay loop> 
+		<source src="assets/SMREMIX.mp3" type="audio/mpeg">
+		</audio>
+	 end of audio player --> 
+	
+	<script type="text/javascript">
+	
+	    <!-- Setting Score and Lives -->
+	    var score = 0;
+	    var lives = 1;
+	    <!-- End -->
+	
+	
+		var game = new Phaser.Game(256, 240, Phaser.CANVAS, '', {
+			preload : preload,
+			create : create,
+			update : update
+		}, false, false);
+
+		function preload() {
+
+
+                game.load.audio('sound', 'assets/CoinSd.mp3');
+				game.load.audio('gameover', 'assets/gmo.mp3');
+                game.load.audio('mainm', 'assets/SMREMIX.mp3');
+				game.load.audio('jumping','audio/jump.wav');
+				game.load.audio('stomping','audio/stomp.wav');
+				game.load.audio('winning','audio/win.mp3');
+			//  We need this because the assets are on github pages
+			//  Remove the next 2 lines if running locally
+			
+
+			this.load.spritesheet('tiles', 'assets/super_mario_tiles.png', 16,
+					16);
+			this.load.spritesheet('goomba', 'assets/goomba.png', 16, 16);
+			this.load.spritesheet('shell', 'assets/shell1.png', 16, 16);
+			this.load.spritesheet('mario', 'assets/mario.png', 16, 16);
+			this.load.spritesheet('coin', 'assets/coin.png', 16, 16);
+			this.load.spritesheet ('masr', 'assets/mas.png', 16,16);
+			this.load.spritesheet ('cld', 'assets/cloud.png', 16,16);
+			this.load.spritesheet('star', 'assets/star.png', 127, 127);
+			this.load.spritesheet('tel', 'assets/telep.png',16 ,16);
+			
+
+			this.load.tilemap('level', 'assets/super_mario_map.json', null,
+					Phaser.Tilemap.TILED_JSON);
+		}
+
+		function create() {
+            Music = game.add.audio('mainm');
+			Music.loop = true ;
+			Music.play();
+			Win = game.add.audio ('winning');
+			JUMP = game.add.audio ('jumping');
+			STOMP = game.add.audio ('stomping');
+            SOUND = game.add.audio('sound');
+			Over = game.add.audio('gameover');
+			Phaser.Canvas.setImageRenderingCrisp(game.canvas)
+			game.scale.pageAlignHorizontally = true;
+			game.scale.pageAlignVertically = true
+			game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+			game.physics.startSystem(Phaser.Physics.ARCADE);
+
+			game.stage.backgroundColor = '#5c94fc';
+
+			map = game.add.tilemap('level');
+			map.addTilesetImage('tiles', 'tiles');
+			map.setCollisionBetween(3, 12, true, 'solid');
+
+			map.createLayer('background');
+
+			layer = map.createLayer('solid');
+			layer.resizeWorld();
+
+			coins = game.add.group();
+			coins.enableBody = true;
+			map.createFromTiles(2, null, 'coin', 'stuff', coins);
+			coins.callAll('animations.add', 'animations', 'spin',
+					[ 0, 0, 1, 2 ], 3, true);
+			coins.callAll('animations.play', 'animations', 'spin');
+			
+						
+			
+			mashrum = game.add.group();
+			mashrum.enableBody = true;
+			map.createFromTiles(3, null, 'masr', 'stuff', mashrum);
+			
+			cloud = game.add.group();
+			cloud.enableBody = true;
+			map.createFromTiles(12,null,'cld','stuff', cloud);
+			
+			teleport = game.add.group();
+			teleport.enableBody = true;
+			map.createFromTiles(23, null, 'tel', 'stuff', teleport);
+			 
+			
+
+			goombas = game.add.group();
+			goombas.enableBody = true;
+			map.createFromTiles(1, null, 'goomba', 'stuff', goombas);
+			goombas.callAll('animations.add', 'animations', 'walk', [ 0, 1 ],
+					2, true);
+			goombas.callAll('animations.play', 'animations', 'walk');
+			goombas.setAll('body.bounce.x', 1);
+			goombas.setAll('body.velocity.x', -20);
+			goombas.setAll('body.gravity.y', 500);
+			
+			shell = game.add.group();
+			shell.enableBody = true;
+			map.createFromTiles(9, null, 'shell', 'stuff', shell);
+			shell.callAll('animations.add', 'animations', 'crawlLeft', [ 1, 0 ],2, true);
+			shell.callAll('animations.add', 'animations', 'crawlRight', [ 3, 2 ],2, true);
+			shell.callAll('animations.play', 'animations', 'crawlRight');
+			shell.setAll('body.bounce.x', 1);
+			shell.setAll('body.velocity.x', -20);
+			shell.setAll('body.gravity.y', 500);
+
+			player = game.add.sprite(16, game.world.height - 48, 'mario');
+			game.physics.arcade.enable(player);
+			player.body.gravity.y = 370;
+			player.body.collideWorldBounds = true;
+			player.animations.add('walkRight', [ 1, 2, 3 ], 10, true);
+			player.animations.add('walkLeft', [ 8, 9, 10 ], 10, true);
+			player.goesRight = true;
+
+			game.camera.follow(player);
+
+			cursors = game.input.keyboard.createCursorKeys();
+		}
+
+		function update() {
+			game.physics.arcade.collide(player, layer);
+			game.physics.arcade.collide(goombas, layer);
+			game.physics.arcade.overlap(player, goombas, goombaOverlap);
+			game.physics.arcade.collide(shell,layer,shellB);
+			game.physics.arcade.overlap(player, shell, shellOverlap);
+			game.physics.arcade.overlap(player, coins, coinOverlap);
+			game.physics.arcade.overlap(player, mashrum, mashrumOverlap);
+			game.physics.arcade.overlap(player, cloud, cldOverlap);
+			game.physics.arcade.overlap(player, teleport, teleportOverlap);
+			document.getElementById("LivesText").innerHTML ="Lives: " + lives;
+			document.getElementById("scoreText").innerHTML ="Score: " + score;
+
+			if (player.body.enable) {
+				player.body.velocity.x = 0;
+				if (cursors.left.isDown) {
+					player.body.velocity.x = -90;
+					player.animations.play('walkLeft');
+					player.goesRight = false;
+				} else if (cursors.right.isDown) {
+					player.body.velocity.x = 90;
+					player.animations.play('walkRight');
+					player.goesRight = true;
+				} else {
+					player.animations.stop();
+					if (player.goesRight)
+						player.frame = 0;
+					else
+						player.frame = 7;
+				}
+
+				if (cursors.up.isDown && player.body.onFloor()) {
+					player.body.velocity.y = -190;
+					JUMP.play();
+					player.animations.stop();
+				}
+
+				if (player.body.velocity.y != 0) {
+					if (player.goesRight)
+						player.frame = 5;
+					else
+						player.frame = 12;
+				}
+			}
+		}
+
+		function coinOverlap(player, coin) {
+                 SOUND.play();
+				 
+			coin.kill();
+			score = score + 1;
+			
+		}
+		function mashrumOverlap(player, mashrum) {
+                 SOUND.play();
+			mashrum.kill();
+			lives = lives + 1;
+			
+		}
+		
+		
+		function teleportOverlap(player, teleport) {
+                 //teleport.kill();
+				 //player.x = 1200; 
+				 player.x = 1900; 
+				 player.y = 111; 
+			
+			
+			
+		}
+		
+		
+		
+		function cldOverlap(player, cloud) {
+                 Music.destroy ();
+				 Win.play();
+				 cloud.kill();
+				 celeb = game.add.sprite(50,50,'star');
+			     celeb.animations.add('asd',[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14], 10, false);
+			     celeb.animations.play('asd');
+			     celeb.fixedToCamera = true ;
+				 player.body.enable = false ;
+				 player.animations.stop();
+		}
+
+		function goombaOverlap(player, goomba) {
+			if (player.body.touching.down) {
+			    STOMP.play();
+				goomba.animations.stop();
+				goomba.frame = 2;
+				goomba.body.enable = false;
+				player.body.velocity.y = -80;
+				game.time.events.add(Phaser.Timer.SECOND, function() {
+					goomba.kill();
+					score = score +5;
+					
+				});
+			} else {
+			    lives-- ;
+			    if ( lives == 0 ){
+				    player.frame = 6;
+				    Music.destroy();
+				    Over.play();
+				    player.body.enable = false;
+				    player.animations.stop();	
+					
+				
+				   
+				} else {
+				player.x = 16;
+				player.y = 70;
+			   	
+			}
+			}
+			
+			
+		}
+		function shellOverlap(player, shell) {
+			
+                lives-- ;
+			    if ( lives == 0 ){
+				    player.frame = 6;
+				    Music.destroy();
+				    Over.play();
+				    player.body.enable = false;
+				    player.animations.stop();	
+					
+				
+				   
+				} else {
+				player.x = 16;
+				player.y = 70;
+			   	
+			}
+					
+				
+				
+				
+				   
+
+				
+			
+			
+			
+		}
+		
+		
+		function shellB(shell,layer)	{
+		
+	
+		if (shell.body.position.x - shell.body.prev.x > 0){					
+			shell.animations.play('crawlRight');
+			}
+		else{																	
+			shell.animations.play('crawlLeft');
+			}
+	
+}
+	</script>
+</body>
+</html>
