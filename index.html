@@ -22,11 +22,6 @@ body {
 	<h2 id="scoreText" align="center" ></h2>
     <h3 id="LivesText" align="center" ></h3> 
 	
-	<!-- audio player
-		<audio  autoplay loop> 
-		<source src="assets/SMREMIX.mp3" type="audio/mpeg">
-		</audio>
-	 end of audio player --> 
 	
 	<script type="text/javascript">
 	
@@ -53,7 +48,8 @@ body {
 				game.load.audio('winning','audio/win.mp3');
 			//  We need this because the assets are on github pages
 			//  Remove the next 2 lines if running locally
-			
+			this.load.baseURL = 'https://itssenz.github.io/Super-Mario/';
+			this.load.crossOrigin = 'anonymous';
 
 			this.load.spritesheet('tiles', 'assets/super_mario_tiles.png', 16,
 					16);
