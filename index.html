@@ -147,6 +147,9 @@ body {
 			game.camera.follow(player);
 
 			cursors = game.input.keyboard.createCursorKeys();
+			
+			this.Lives = game.add.text(50, 50, "Lives: " + lives, { fontSize: "19px", fill: "#133913"});
+			this.Score = game.add.text(50, 70, "Score: " + score, { fontSize: "19px", fill: "#133913"});
 		}
 
 		function update() {
