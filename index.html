@@ -162,6 +162,9 @@ body {
 			game.physics.arcade.overlap(player, mashrum, mashrumOverlap);
 			game.physics.arcade.overlap(player, cloud, cldOverlap);
 			game.physics.arcade.overlap(player, teleport, teleportOverlap);
+			this.Score.text = "Score: " + score;
+			
+			
 			document.getElementById("LivesText").innerHTML ="Lives: " + lives;
 			document.getElementById("scoreText").innerHTML ="Score: " + score;
 
